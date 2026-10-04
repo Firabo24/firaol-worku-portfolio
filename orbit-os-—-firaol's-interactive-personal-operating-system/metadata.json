@@ -1,0 +1,8 @@
+{
+  "name": "Firaol Worku — ORBIT OS",
+  "description": "An interactive personal technology operating system covering AI, Software Engineering, Health Technology, and Product / UI/UX.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
