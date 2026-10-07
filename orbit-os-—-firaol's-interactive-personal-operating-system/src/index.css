@@ -94,3 +94,72 @@
   }
 }
 
+/* Professional Print & PDF export styles */
+@media print {
+  @page {
+    margin: 1.5cm;
+    size: auto;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #111827 !important;
+    overflow: visible !important;
+  }
+
+  /* Hide screen chrome, HUD, taskbar, orbital canvas */
+  .no-print,
+  header,
+  nav,
+  svg,
+  .living-bg,
+  [aria-label="Running Applications"],
+  button:not(.print-include) {
+    display: none !important;
+  }
+
+  /* Format CV document for clean physical printing */
+  .cv-document {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #111827 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .cv-document * {
+    background-color: transparent !important;
+    color: #111827 !important;
+    border-color: #e5e7eb !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .cv-document h1,
+  .cv-document h2,
+  .cv-document h3 {
+    color: #000000 !important;
+  }
+
+  .cv-document a {
+    color: #0369a1 !important;
+    text-decoration: underline !important;
+  }
+
+  .cv-badge {
+    border: 1px solid #d1d5db !important;
+    color: #374151 !important;
+  }
+
+  section,
+  article,
+  header,
+  footer {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
+
+

@@ -6,7 +6,9 @@ export type WindowId =
   | 'knowledge-matrix'
   | 'achievement-vault'
   | 'engineering-log'
-  | 'terminal';
+  | 'terminal'
+  | 'profile'
+  | 'cv';
 
 export interface WindowState {
   id: WindowId;
@@ -24,12 +26,12 @@ export interface WindowState {
 interface WindowContextType {
   windows: Record<WindowId, WindowState>;
   activeWindowId: WindowId | null;
-  openWindow: (id: WindowId) => void;
+  openWindow: (id: WindowId, options?: { silent?: boolean }) => void;
   closeWindow: (id: WindowId) => void;
   minimizeWindow: (id: WindowId) => void;
   restoreWindow: (id: WindowId) => void;
   maximizeWindow: (id: WindowId) => void;
-  focusWindow: (id: WindowId) => void;
+  focusWindow: (id: WindowId, options?: { silent?: boolean }) => void;
   toggleWindow: (id: WindowId) => void;
   updatePosition: (id: WindowId, pos: { x: number; y: number }) => void;
   updateSize: (id: WindowId, size: { width: number; height: number }) => void;
@@ -96,6 +98,30 @@ const INITIAL_WINDOWS: Record<WindowId, WindowState> = {
     zIndex: 10,
     position: { x: 180, y: 110 },
     size: { width: 760, height: 480 }
+  },
+  'profile': {
+    id: 'profile',
+    title: 'SYSTEM IDENTITY // FIRAOL WORKU',
+    shortTitle: 'Identity',
+    badge: 'CORE PROFILE',
+    isOpen: false,
+    isMinimized: false,
+    isMaximized: false,
+    zIndex: 10,
+    position: { x: 130, y: 70 },
+    size: { width: 880, height: 600 }
+  },
+  'cv': {
+    id: 'cv',
+    title: 'CURRICULUM VITAE // FIRAOL WORKU',
+    shortTitle: 'CV / Resume',
+    badge: 'DOC PRINT',
+    isOpen: false,
+    isMinimized: false,
+    isMaximized: false,
+    zIndex: 10,
+    position: { x: 100, y: 60 },
+    size: { width: 920, height: 640 }
   }
 };
 
@@ -139,25 +165,36 @@ export function WindowProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const focusWindow = useCallback((id: WindowId) => {
-    setHighestZIndex((prevZ) => {
-      const nextZ = prevZ + 1;
-      setWindows((prev) => ({
-        ...prev,
-        [id]: {
-          ...prev[id],
-          zIndex: nextZ,
-          isMinimized: false
-        }
-      }));
-      return nextZ;
+  const focusWindow = useCallback((id: WindowId, options?: { silent?: boolean }) => {
+    setActiveWindowId((prevActive) => {
+      // If already active, avoid redundant sound and z-index re-bump
+      if (prevActive === id) {
+        return prevActive;
+      }
+      if (!options?.silent) {
+        soundFx.playFocus();
+      }
+      setHighestZIndex((prevZ) => {
+        const nextZ = prevZ + 1;
+        setWindows((prev) => ({
+          ...prev,
+          [id]: {
+            ...prev[id],
+            zIndex: nextZ,
+            isMinimized: false
+          }
+        }));
+        return nextZ;
+      });
+      return id;
     });
-    setActiveWindowId(id);
   }, []);
 
   const openWindow = useCallback(
-    (id: WindowId) => {
-      soundFx.playOpen();
+    (id: WindowId, options?: { silent?: boolean }) => {
+      if (!options?.silent) {
+        soundFx.playOpen();
+      }
       setHighestZIndex((prevZ) => {
         const nextZ = prevZ + 1;
         setWindows((prev) => ({
@@ -222,7 +259,7 @@ export function WindowProvider({ children }: { children: React.ReactNode }) {
   const restoreWindow = useCallback(
     (id: WindowId) => {
       soundFx.playClick();
-      focusWindow(id);
+      focusWindow(id, { silent: true });
     },
     [focusWindow]
   );

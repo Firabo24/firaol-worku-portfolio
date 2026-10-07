@@ -16,7 +16,9 @@ import {
   Terminal,
   Layers,
   X,
-  Minus
+  Minus,
+  User,
+  FileText
 } from 'lucide-react';
 
 export function OrbitDesktop() {
@@ -105,6 +107,10 @@ export function OrbitDesktop() {
         return <GitBranch className="w-3.5 h-3.5" />;
       case 'terminal':
         return <Terminal className="w-3.5 h-3.5" />;
+      case 'profile':
+        return <User className="w-3.5 h-3.5" />;
+      case 'cv':
+        return <FileText className="w-3.5 h-3.5" />;
       default:
         return <Layers className="w-3.5 h-3.5" />;
     }
@@ -236,6 +242,7 @@ export function OrbitDesktop() {
                 <button
                   key={win.id}
                   onClick={() => toggleWindow(win.id)}
+                  onMouseEnter={() => soundFx.playHover()}
                   aria-label={`${win.shortTitle}: ${win.isMinimized ? 'Restore' : isActive ? 'Minimize' : 'Bring to front'}`}
                   className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-mono-tech transition-all cursor-pointer whitespace-nowrap ${
                     isActive
@@ -259,6 +266,7 @@ export function OrbitDesktop() {
             {/* Close All Action */}
             <button
               onClick={closeAll}
+              onMouseEnter={() => soundFx.playHover()}
               aria-label="Close all windows"
               title="Close all open windows"
               className="p-1.5 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/80 rounded-lg transition-colors cursor-pointer ml-1"

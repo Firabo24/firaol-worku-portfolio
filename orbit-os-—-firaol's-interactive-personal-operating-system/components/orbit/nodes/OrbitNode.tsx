@@ -28,7 +28,6 @@ export function OrbitNode({ config, coords, isMobileList = false }: OrbitNodePro
 
   const handleClick = () => {
     if (isOpen && !win?.isMinimized) {
-      soundFx.playClick();
       focusWindow(config.id);
     } else {
       openWindow(config.id);
@@ -57,7 +56,10 @@ export function OrbitNode({ config, coords, isMobileList = false }: OrbitNodePro
     return (
       <button
         onClick={handleClick}
-        onMouseEnter={() => setHoveredNodeId(config.id)}
+        onMouseEnter={() => {
+          setHoveredNodeId(config.id);
+          soundFx.playHover();
+        }}
         onMouseLeave={() => setHoveredNodeId(null)}
         className={`w-full flex items-center justify-between p-3 rounded-xl border backdrop-blur-md transition-all text-left cursor-pointer ${
           isOpen
@@ -110,9 +112,15 @@ export function OrbitNode({ config, coords, isMobileList = false }: OrbitNodePro
       <button
         type="button"
         onClick={handleClick}
-        onMouseEnter={() => setHoveredNodeId(config.id)}
+        onMouseEnter={() => {
+          setHoveredNodeId(config.id);
+          soundFx.playHover();
+        }}
         onMouseLeave={() => setHoveredNodeId(null)}
-        onFocus={() => setHoveredNodeId(config.id)}
+        onFocus={() => {
+          setHoveredNodeId(config.id);
+          soundFx.playHover();
+        }}
         onBlur={() => setHoveredNodeId(null)}
         aria-label={`Open ${config.label} window (Key ${config.shortcut})`}
         className={`group relative flex items-center gap-2 sm:gap-3 px-2.5 py-1.5 sm:px-3.5 sm:py-2.5 min-h-[44px] touch-manipulation rounded-xl border backdrop-blur-md transition-all duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 whitespace-nowrap ${

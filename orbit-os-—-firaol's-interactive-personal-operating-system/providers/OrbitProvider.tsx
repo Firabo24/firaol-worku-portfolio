@@ -21,7 +21,7 @@ interface OrbitContextType {
   uptimeSeconds: number;
   skipBoot: () => void;
   reboot: () => void;
-  triggerCorePulse: () => void;
+  triggerCorePulse: (options?: { silent?: boolean }) => void;
   toggleMute: () => void;
   setHoveredNodeId: (id: string | null) => void;
   setActiveNodeId: (id: string | null) => void;
@@ -86,6 +86,7 @@ export function OrbitProvider({ children }: { children: React.ReactNode }) {
       timeout = setTimeout(() => setBootStage('READY'), 550);
     } else if (bootStage === 'READY') {
       timeout = setTimeout(() => {
+        soundFx.playBoot();
         setBootStage('COMPLETE');
         try {
           sessionStorage.setItem('orbit_has_booted', 'true');
@@ -98,7 +99,7 @@ export function OrbitProvider({ children }: { children: React.ReactNode }) {
   }, [bootStage]);
 
   const skipBoot = useCallback(() => {
-    soundFx.playClick();
+    soundFx.playBoot();
     setBootStage('COMPLETE');
     try {
       sessionStorage.setItem('orbit_has_booted', 'true');
@@ -117,8 +118,10 @@ export function OrbitProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const triggerCorePulse = useCallback(() => {
-    soundFx.playPulse();
+  const triggerCorePulse = useCallback((options?: { silent?: boolean }) => {
+    if (!options?.silent) {
+      soundFx.playPulse();
+    }
     setIsResonating(true);
     setTimeout(() => {
       setIsResonating(false);

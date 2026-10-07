@@ -3,7 +3,8 @@ import { useOrbitContext } from '@/providers/OrbitProvider';
 import { useWindowContext } from '@/providers/WindowProvider';
 import { missions } from '@/data/missions';
 import { ORBIT_NODES } from '../nodes/nodes.config';
-import { Volume2, VolumeX, RotateCcw, HelpCircle, Terminal as TerminalIcon, Sparkles } from 'lucide-react';
+import { soundFx } from '@/lib/utils';
+import { Volume2, VolumeX, RotateCcw, HelpCircle, Terminal as TerminalIcon, Sparkles, Search } from 'lucide-react';
 
 export function OrbitHUD() {
   const {
@@ -69,9 +70,24 @@ export function OrbitHUD() {
           <span className="font-medium tracking-wider">{systemTime || '12:00:00'}</span>
         </div>
 
+        {/* Command Palette Trigger */}
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent('orbit:open-command-palette'))}
+          onMouseEnter={() => soundFx.playHover()}
+          aria-label="Open Command Palette (Ctrl+K or Cmd+K)"
+          title="Command Palette (Ctrl+K)"
+          className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 bg-[#0a0f1d]/80 hover:bg-zinc-800/80 active:bg-zinc-700/80 text-zinc-300 hover:text-cyan-300 border border-zinc-800/80 rounded-lg text-xs font-mono-tech transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 cursor-pointer shadow-sm"
+        >
+          <Search className="w-3.5 h-3.5 text-cyan-400" />
+          <span className="hidden md:inline text-[10px] text-zinc-400 font-mono-tech">
+            <kbd className="px-1 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-300 text-[9px]">CTRL K</kbd>
+          </span>
+        </button>
+
         {/* Quick Launch Terminal Button */}
         <button
           onClick={() => openWindow('terminal')}
+          onMouseEnter={() => soundFx.playHover()}
           aria-label="Open ORBIT Terminal (Press 5)"
           title="Open ORBIT Terminal (Press 5)"
           className="p-1.5 bg-[#0a0f1d]/80 hover:bg-zinc-800/80 active:bg-zinc-700/80 text-zinc-300 hover:text-cyan-400 border border-zinc-800/80 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 cursor-pointer"
@@ -81,7 +97,8 @@ export function OrbitHUD() {
 
         {/* Pulse Core Trigger */}
         <button
-          onClick={triggerCorePulse}
+          onClick={() => triggerCorePulse()}
+          onMouseEnter={() => soundFx.playHover()}
           aria-label="Trigger Core Resonance Pulse"
           title="Trigger Core Resonance Pulse"
           className="hidden sm:flex p-1.5 bg-[#0a0f1d]/80 hover:bg-zinc-800/80 active:bg-zinc-700/80 text-zinc-300 hover:text-cyan-400 border border-zinc-800/80 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 cursor-pointer"
@@ -92,6 +109,7 @@ export function OrbitHUD() {
         {/* Sound Toggle */}
         <button
           onClick={toggleMute}
+          onMouseEnter={() => soundFx.playHover()}
           aria-label={isMuted ? 'Unmute Audio Feedback' : 'Mute Audio Feedback'}
           title={isMuted ? 'Audio Muted' : 'Audio Enabled'}
           className="p-1.5 bg-[#0a0f1d]/80 hover:bg-zinc-800/80 active:bg-zinc-700/80 text-zinc-300 hover:text-cyan-400 border border-zinc-800/80 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 cursor-pointer"
@@ -102,6 +120,7 @@ export function OrbitHUD() {
         {/* Help / Shortcuts modal toggle */}
         <button
           onClick={() => setShowHelp(!showHelp)}
+          onMouseEnter={() => soundFx.playHover()}
           aria-label="System Shortcuts & Help"
           title="System Shortcuts (ESC)"
           className="p-1.5 bg-[#0a0f1d]/80 hover:bg-zinc-800/80 active:bg-zinc-700/80 text-zinc-300 hover:text-cyan-400 border border-zinc-800/80 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 cursor-pointer"
@@ -112,6 +131,7 @@ export function OrbitHUD() {
         {/* Reboot button */}
         <button
           onClick={reboot}
+          onMouseEnter={() => soundFx.playHover()}
           aria-label="Reboot ORBIT OS"
           title="Reboot System"
           className="hidden sm:flex p-1.5 bg-[#0a0f1d]/80 hover:bg-zinc-800/80 active:bg-zinc-700/80 text-zinc-400 hover:text-zinc-200 border border-zinc-800/80 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400 cursor-pointer"

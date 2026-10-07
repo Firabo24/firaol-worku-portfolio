@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { WindowState } from '@/providers/WindowProvider';
-import { Minus, Square, Minimize2, X, Terminal, Shield, Cpu, Compass, GitBranch, Layers } from 'lucide-react';
+import { Minus, Square, Minimize2, X, Terminal, Shield, Cpu, Compass, GitBranch, Layers, User, FileText } from 'lucide-react';
 
 interface OrbitWindowProps {
   windowState: WindowState;
@@ -102,6 +102,10 @@ export function OrbitWindow({
         return <GitBranch className="w-3.5 h-3.5 text-blue-400" />;
       case 'terminal':
         return <Terminal className="w-3.5 h-3.5 text-zinc-300" />;
+      case 'profile':
+        return <User className="w-3.5 h-3.5 text-cyan-300" />;
+      case 'cv':
+        return <FileText className="w-3.5 h-3.5 text-cyan-300" />;
       default:
         return <Layers className="w-3.5 h-3.5 text-zinc-400" />;
     }

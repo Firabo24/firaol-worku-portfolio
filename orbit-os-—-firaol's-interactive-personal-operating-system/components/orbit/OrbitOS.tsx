@@ -1,25 +1,59 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useOrbitContext, BootStage } from '@/providers/OrbitProvider';
 import { useWindowContext, WindowId } from '@/providers/WindowProvider';
 import { OrbitDesktop } from './desktop/OrbitDesktop';
+import { OrbitCommandPalette } from './commands/OrbitCommandPalette';
 import { soundFx } from '@/lib/utils';
 import { X, Sparkles, Terminal, Keyboard } from 'lucide-react';
 
 export function OrbitOS() {
+  const [showCommandPalette, setShowCommandPalette] = useState<boolean>(false);
+  const [easterEggBanner, setEasterEggBanner] = useState<{ title: string; message: string } | null>(null);
+
   const {
     bootStage,
     isBooting,
     skipBoot,
     showHelp,
-    setShowHelp
+    setShowHelp,
+    triggerCorePulse
   } = useOrbitContext();
 
   const { openWindow, activeWindowId, closeWindow } = useWindowContext();
 
-  // Keyboard navigation system
+  // Konami Code sequence tracker
+  const konamiSequence = useRef<string[]>([]);
+  const KONAMI_CODE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+
+  // Keyboard navigation, Konami code and system shortcut listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if user is currently interacting with an input or editable field
+      // Konami code check
+      const key = e.key.toLowerCase();
+      const expectedKey = KONAMI_CODE[konamiSequence.current.length].toLowerCase();
+      if (key === expectedKey) {
+        konamiSequence.current.push(key);
+        if (konamiSequence.current.length === KONAMI_CODE.length) {
+          konamiSequence.current = [];
+          soundFx.playEasterEgg();
+          triggerCorePulse({ silent: true });
+          setEasterEggBanner({
+            title: '⚡ KONAMI PROTOCOL ACCEPTED',
+            message: 'Celestial harmonics engaged across all 5 orbital nodes.'
+          });
+        }
+      } else {
+        konamiSequence.current = key === 'arrowup' ? ['arrowup'] : [];
+      }
+
+      // 1. Global Command Palette Shortcut [Ctrl+K / Cmd+K]
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setShowCommandPalette((prev) => !prev);
+        return;
+      }
+
+      // Ignore standard key bindings if user is typing in an input
       const target = e.target as HTMLElement;
       if (
         target &&
@@ -31,6 +65,10 @@ export function OrbitOS() {
       }
 
       if (e.key === 'Escape') {
+        if (showCommandPalette) {
+          setShowCommandPalette(false);
+          return;
+        }
         if (showHelp) {
           setShowHelp(false);
           return;
@@ -60,9 +98,36 @@ export function OrbitOS() {
       }
     };
 
+    const handleCustomOpen = () => {
+      setShowCommandPalette(true);
+    };
+
+    const handleEasterEggEvent = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setEasterEggBanner({
+        title: detail?.title || 'ORBIT PROTOCOL DISCOVERED',
+        message: detail?.message || 'Harmonic resonance signature acknowledged.'
+      });
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isBooting, skipBoot, showHelp, setShowHelp, activeWindowId, closeWindow, openWindow]);
+    window.addEventListener('orbit:open-command-palette', handleCustomOpen);
+    window.addEventListener('orbit:easter-egg', handleEasterEggEvent);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('orbit:open-command-palette', handleCustomOpen);
+      window.removeEventListener('orbit:easter-egg', handleEasterEggEvent);
+    };
+  }, [isBooting, skipBoot, showHelp, setShowHelp, activeWindowId, closeWindow, openWindow, showCommandPalette, triggerCorePulse]);
+
+  // Auto-dismiss easter egg banner
+  useEffect(() => {
+    if (!easterEggBanner) return;
+    const timer = setTimeout(() => {
+      setEasterEggBanner(null);
+    }, 4500);
+    return () => clearTimeout(timer);
+  }, [easterEggBanner]);
 
   const getBootProgress = (stage: BootStage) => {
     switch (stage) {
@@ -182,16 +247,60 @@ export function OrbitOS() {
                 <kbd className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-cyan-400">[5]</kbd>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-zinc-950/60 border border-zinc-800/60">
+                <span className="text-zinc-300">Reveal System Identity Profile</span>
+                <kbd className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-cyan-400">[CORE]</kbd>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded bg-zinc-950/60 border border-zinc-800/60">
+                <span className="text-zinc-300">Open System Command Palette</span>
+                <kbd className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-cyan-400">[CTRL K]</kbd>
+              </div>
+              <div className="flex items-center justify-between p-2 rounded bg-zinc-950/60 border border-zinc-800/60">
                 <span className="text-zinc-300">Close Active Window / Dismiss</span>
                 <kbd className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 text-zinc-400">[ESC]</kbd>
               </div>
             </div>
 
             <div className="text-[11px] text-zinc-400 font-light border-t border-zinc-800 pt-3">
-              ORBIT OS is an interactive operating system and portfolio by Firaol. Click the Core to trigger resonance pulses or drag desktop windows anywhere on the canvas.
+              ORBIT OS is an interactive operating system and portfolio by Firaol. Press CTRL+K to open the system command palette or click the Core to trigger resonance pulses.
             </div>
           </div>
         </div>
+      )}
+
+      {/* System Command Palette Overlay */}
+      <OrbitCommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+      />
+
+      {/* Meaningful Easter Egg Notification Banner */}
+      {easterEggBanner && (
+        <aside
+          role="status"
+          aria-live="polite"
+          className="fixed top-14 sm:top-16 inset-x-0 z-50 flex justify-center pointer-events-none px-4 animate-in fade-in slide-in-from-top-4 duration-300"
+        >
+          <div className="pointer-events-auto flex items-center gap-3 px-4 py-3 bg-[#080d19]/95 border border-emerald-400/70 text-zinc-100 rounded-xl shadow-[0_0_35px_rgba(52,211,153,0.25)] backdrop-blur-xl max-w-md">
+            <div className="p-2 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 shrink-0">
+              <Sparkles className="w-4 h-4 animate-spin" style={{ animationDuration: '4s' }} />
+            </div>
+            <div className="min-w-0 text-left">
+              <div className="text-xs font-mono-tech font-bold text-emerald-400 uppercase tracking-wider">
+                {easterEggBanner.title}
+              </div>
+              <p className="text-[11px] font-mono-tech text-zinc-300 mt-0.5 font-light">
+                {easterEggBanner.message}
+              </p>
+            </div>
+            <button
+              onClick={() => setEasterEggBanner(null)}
+              className="p-1 text-zinc-400 hover:text-zinc-200 ml-auto cursor-pointer"
+              aria-label="Dismiss Notification"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </aside>
       )}
     </div>
   );

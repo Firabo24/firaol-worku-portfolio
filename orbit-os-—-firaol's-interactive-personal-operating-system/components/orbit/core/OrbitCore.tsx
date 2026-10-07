@@ -1,24 +1,76 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useOrbitContext } from '@/providers/OrbitProvider';
+import { useWindowContext } from '@/providers/WindowProvider';
 import { missions } from '@/data/missions';
 import { ORBIT_NODES } from '../nodes/nodes.config';
+import { soundFx } from '@/lib/utils';
 
 export function OrbitCore() {
   const { isResonating, triggerCorePulse } = useOrbitContext();
+  const { windows, openWindow, focusWindow, restoreWindow } = useWindowContext();
+  const [celestialOverload, setCelestialOverload] = useState(false);
+
+  const clickCountRef = useRef(0);
+  const clickTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleCoreClick = () => {
+    // Check rapid click easter egg (4 clicks within 1.5 seconds)
+    clickCountRef.current += 1;
+    if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+
+    if (clickCountRef.current >= 4) {
+      clickCountRef.current = 0;
+      soundFx.playEasterEgg();
+      setCelestialOverload(true);
+      window.dispatchEvent(
+        new CustomEvent('orbit:easter-egg', {
+          detail: {
+            title: 'CORE CELESTIAL ALIGNMENT',
+            message: 'All 5 orbital vectors locked into resonant harmonic symmetry.'
+          }
+        })
+      );
+      setTimeout(() => setCelestialOverload(false), 3000);
+    } else {
+      clickTimerRef.current = setTimeout(() => {
+        clickCountRef.current = 0;
+      }, 1400);
+
+      // Standard resonance pulse
+      triggerCorePulse();
+    }
+
+    // Open / restore / focus profile window without sound duplication
+    const profileWin = windows.profile;
+    if (profileWin?.isOpen) {
+      if (profileWin.isMinimized) {
+        restoreWindow('profile');
+      } else {
+        focusWindow('profile', { silent: true });
+      }
+    } else {
+      openWindow('profile', { silent: true });
+    }
+  };
 
   return (
     <div className="relative flex items-center justify-center select-none">
       {/* Interactive concentric orbital rings around Core */}
       <button
         type="button"
-        onClick={triggerCorePulse}
-        aria-label="ORBIT Central Core: Click to trigger resonance pulse"
+        onClick={handleCoreClick}
+        onMouseEnter={() => soundFx.playHover()}
+        aria-label="ORBIT Central Core: Click to trigger resonance pulse and view profile"
         className="relative group w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-full"
       >
         {/* Outermost orbit trace ring */}
         <div
-          className={`absolute inset-0 rounded-full border border-cyan-500/20 group-hover:border-cyan-400/40 transition-all duration-700 ${
-            isResonating ? 'scale-110 border-cyan-400 opacity-100' : 'opacity-60'
+          className={`absolute inset-0 rounded-full border transition-all duration-700 ${
+            celestialOverload
+              ? 'scale-115 border-emerald-400 shadow-[0_0_35px_rgba(52,211,153,0.5)] opacity-100'
+              : isResonating
+              ? 'scale-110 border-cyan-400 opacity-100'
+              : 'border-cyan-500/20 group-hover:border-cyan-400/40 opacity-60'
           }`}
         >
           {/* Subtle orbital perimeter tick marks */}
@@ -56,7 +108,7 @@ export function OrbitCore() {
             FIRAOL
           </h1>
 
-          <p className="text-[9px] sm:text-[10px] text-zinc-400 font-mono-tech tracking-wider mt-0.5 max-w-[120px] sm:max-w-[150px] truncate">
+          <p className="text-[9px] sm:text-[10px] text-zinc-300 font-mono-tech font-medium tracking-wider mt-0.5 max-w-[120px] sm:max-w-[150px] truncate">
             SYSTEMS &amp; HEALTH
           </p>
 
@@ -68,8 +120,8 @@ export function OrbitCore() {
           </div>
 
           {/* Resonance hint on hover */}
-          <div className="mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-[8px] font-mono-tech text-cyan-400/70 hidden sm:block">
-            [ PULSE ]
+          <div className="mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-[8px] font-mono-tech text-cyan-400/80 hidden sm:block">
+            [ IDENTITY // PULSE ]
           </div>
         </div>
 
@@ -78,8 +130,8 @@ export function OrbitCore() {
       </button>
 
       {/* Brief editorial subtitle below Core - positioned absolutely so it never shifts the geometric center */}
-      <div className="absolute top-[calc(100%+10px)] left-1/2 -translate-x-1/2 text-center pointer-events-none hidden md:block whitespace-nowrap">
-        <p className="text-[11px] text-zinc-400/80 font-light">
+      <div className="absolute top-[calc(100%+14px)] left-1/2 -translate-x-1/2 text-center pointer-events-none hidden md:block whitespace-nowrap">
+        <p className="text-[10px] text-zinc-500/75 font-light tracking-wide">
           Autonomous workspace &amp; technical portfolio
         </p>
       </div>

@@ -6,6 +6,8 @@ import { KnowledgeMatrix } from '../apps/knowledge-matrix/KnowledgeMatrix';
 import { AchievementVault } from '../apps/achievement-vault/AchievementVault';
 import { EngineeringLog } from '../apps/engineering-log/EngineeringLog';
 import { OrbitTerminal } from '../apps/terminal/OrbitTerminal';
+import { SystemProfile } from '../apps/profile/SystemProfile';
+import { SystemCV } from '../apps/cv/SystemCV';
 
 export function WindowManager() {
   const {
@@ -30,6 +32,10 @@ export function WindowManager() {
         return <EngineeringLog />;
       case 'terminal':
         return <OrbitTerminal />;
+      case 'profile':
+        return <SystemProfile />;
+      case 'cv':
+        return <SystemCV />;
       default:
         return null;
     }
